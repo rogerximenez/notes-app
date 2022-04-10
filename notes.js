@@ -1,10 +1,10 @@
 const fs = require('fs')
+const chalk = require('chalk')
 
-const getNotes = function () {
-    return 'Your Notes...'
-}
+const successMsg = (x) => chalk.green(x)
+const warningMsg = (x) => chalk.red(x)
 
-const loadNotes = function() {
+const loadNotes = () => {
     try {
         const dataBuffer = fs.readFileSync('notes.json')
         const dataJSON = dataBuffer.toString()
@@ -14,39 +14,60 @@ const loadNotes = function() {
     }
 }
 
-const savenotes = function(notes) {
+const savenotes = (notes) => {
     const dataJSON = JSON.stringify(notes)
     fs.writeFileSync('notes.json', dataJSON)
 }
 
-const addNote = function(title, body) {
+const addNote = (title, body) => {
     const notes = loadNotes()
-    const duplicateNotes = notes.filter(function (note) {
-        return note.title === title
-    })
+    const duplicateNote = notes.find((note) => note.title === title)
 
-    if(duplicateNotes.length === 0) {
+    if(!duplicateNote) {
         notes.push({
             title: title,
             body: body
         })
         savenotes(notes)
-        console.log('New note added!')
+        console.log(successMsg('New note added!'))
     } else {
-        console.log('Note title taken')
+        console.log(warningMsg('Note title taken'))
     }
 }
 
-const removeNote = function(title) {
+const removeNote = (title) => {
     const notes = loadNotes()
-    const notesToKeep = notes.filter(function (note) {
-        return note.title !== title
-    })
-    savenotes(notesToKeep);
+    const notesToKeep = notes.filter((note) => note.title !== title)
+    if(notes > notesToKeep) {
+        savenotes(notesToKeep);
+        console.log(successMsg('Note Removed!'))
+    } else {
+        console.log(warningMsg('No note found'))
+    }
+}
+
+const listNotes = () => {
+    const notes = loadNotes()
+    console.log(successMsg('Your Notes'))
+
+    notes.forEach((note) => console.log(note.title))
+}
+
+const readNote = (title) => {
+    const notes = loadNotes()
+    const noteFound = notes.find((note) => note.title === title)
+
+    if(noteFound) {
+        console.log(successMsg(noteFound.title))
+        console.log(noteFound.body)
+    } else {
+        console.log(warningMsg('No note found'))
+    }
 }
 
 module.exports = {
-    getNotes: getNotes,
     addNote: addNote,
-    removeNote: removeNote
+    removeNote: removeNote,
+    listNotes: listNotes,
+    readNote: readNote
 }
